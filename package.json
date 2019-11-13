@@ -1,6 +1,6 @@
 {
   "name": "@kaliber/redux-form-legacy",
-  "version": "5.3.6",
+  "version": "0.0.0",
   "main": "./src/index.js",
   "dependencies": {
     "deep-equal": "^1.0.1",
