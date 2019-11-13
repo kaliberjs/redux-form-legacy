@@ -29,7 +29,7 @@ const shouldAsyncValidate = (name, asyncBlurFields) =>
   // remove array indices
   ~asyncBlurFields.indexOf(name.replace(/\[[0-9]+\]/g, '[]'));
 
-const readField = (state, fieldName, pathToHere = '', fields, syncErrors, asyncValidate, isReactNative, props, callback = () => null, prefix = '') => {
+const readField = (state, fieldName, pathToHere = '', fields, syncErrors, asyncValidate, props, callback = () => null, prefix = '') => {
   const {asyncBlurFields, autofill, blur, change, focus, form, initialValues, readonly, addArrayValue,
     removeArrayValue, swapArrayValues} = props;
   const dotIndex = fieldName.indexOf('.');
@@ -81,7 +81,7 @@ const readField = (state, fieldName, pathToHere = '', fields, syncErrors, asyncV
       const nextPrefix = `${prefix}${key}[]${rest ? '.' : ''}`;
 
       let result = readField(fieldState, rest, nextPath, dest, syncErrors,
-        asyncValidate, isReactNative, props, callback, nextPrefix);
+        asyncValidate, props, callback, nextPrefix);
       if (fieldArray[index] !== result) {
         if (rest) {
           // if something's after [] in field name, the array item is an object field
@@ -112,7 +112,7 @@ const readField = (state, fieldName, pathToHere = '', fields, syncErrors, asyncV
     const nextPrefix = prefix + key + '.';
     const previous = subobject[nextKey];
     const result = readField(state[key] || {}, rest, nextPath, subobject, syncErrors, asyncValidate,
-      isReactNative, props, callback, nextPrefix);
+      props, callback, nextPrefix);
     if (result !== previous) {
       subobject = {
         ...subobject,
@@ -125,7 +125,7 @@ const readField = (state, fieldName, pathToHere = '', fields, syncErrors, asyncV
   const name = pathToHere + fieldName;
   const field = fields[fieldName] || {};
   if (field.name !== name) {
-    const onChange = createOnChange(name, change, isReactNative);
+    const onChange = createOnChange(name, change);
     const initialFormValue = read(`${name}.initial`, form);
     let initialValue = initialFormValue || read(name, initialValues);
     initialValue = initialValue === undefined ? '' : initialValue;
@@ -135,7 +135,7 @@ const readField = (state, fieldName, pathToHere = '', fields, syncErrors, asyncV
     field.initialValue = initialValue;
     if (!readonly) {
       field.autofill = value => autofill(name, value);
-      field.onBlur = createOnBlur(name, blur, isReactNative,
+      field.onBlur = createOnBlur(name, blur,
         shouldAsyncValidate(name, asyncBlurFields) &&
         ((blurName, blurValue) => silencePromise(asyncValidate(blurName, blurValue))));
       field.onChange = onChange;

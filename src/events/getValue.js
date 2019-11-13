@@ -13,12 +13,9 @@ const getSelectedValues = options => {
   return result;
 };
 
-const getValue = (event, isReactNative) => {
+const getValue = (event) => {
   if (isEvent(event)) {
-    if (!isReactNative && event.nativeEvent && event.nativeEvent.text !== undefined) {
-      return event.nativeEvent.text;
-    }
-    if (isReactNative && event.nativeEvent !== undefined) {
+    if (event.nativeEvent && event.nativeEvent.text !== undefined) {
       return event.nativeEvent.text;
     }
     const {target: {type, value, checked, files}, dataTransfer} = event;

@@ -1,14 +1,11 @@
 import { ADD_ARRAY_VALUE, AUTOFILL, BLUR, CHANGE, DESTROY, FOCUS, INITIALIZE, REMOVE_ARRAY_VALUE, RESET, START_ASYNC_VALIDATION,
   START_SUBMIT, STOP_ASYNC_VALIDATION, STOP_SUBMIT, SUBMIT_FAILED, SWAP_ARRAY_VALUES, TOUCH, UNTOUCH } from './actionTypes';
-import mapValues from './mapValues';
 import read from './read';
 import write from './write';
-import getValuesFromState from './getValuesFromState';
 import initializeState from './initializeState';
 import resetState from './resetState';
 import setErrors from './setErrors';
 import {makeFieldValue} from './fieldValue';
-import normalizeFields from './normalizeFields';
 import createInitialState from './createInitialState';
 
 export const globalErrorKey = '_error';
@@ -178,12 +175,7 @@ const behaviors = {
   }
 };
 
-const reducer = (state = initialState, action = {}) => {
-  const behavior = behaviors[action.type];
-  return behavior ? behavior(state, action) : state;
-};
-
-function formReducer(state = {}, action = {}) {
+export default function formReducer(state = {}, action = {}) {
   const {form, key, ...rest} = action; // eslint-disable-line no-redeclare
   if (!form) {
     return state;
@@ -220,49 +212,7 @@ function formReducer(state = {}, action = {}) {
   };
 }
 
-/**
- * Adds additional functionality to the reducer
- */
-function decorate(target) {
-  target.plugin = function plugin(reducers) { // use 'function' keyword to enable 'this'
-    return decorate((state = {}, action = {}) => {
-      const result = this(state, action);
-      return {
-        ...result,
-        ...mapValues(reducers, (pluginReducer, key) => pluginReducer(result[key] || initialState, action))
-      };
-    });
-  };
-
-  target.normalize = function normalize(normalizers) { // use 'function' keyword to enable 'this'
-    return decorate((state = {}, action = {}) => {
-      const result = this(state, action);
-      return {
-        ...result,
-        ...mapValues(normalizers, (formNormalizers, form) => {
-          const runNormalize = (previous, currentResult) => {
-            const previousValues = getValuesFromState({
-              ...initialState, ...previous
-            });
-            const formResult = {
-              ...initialState,
-              ...currentResult
-            };
-            const values = getValuesFromState(formResult);
-            return normalizeFields(formNormalizers, formResult, previous, values, previousValues);
-          };
-          if (action.key) {
-            return {
-              ...result[form], [action.key]: runNormalize(state[form][action.key], result[form][action.key])
-            };
-          }
-          return runNormalize(state[form], result[form]);
-        })
-      };
-    });
-  };
-
-  return target;
-}
-
-export default decorate(formReducer);
+function reducer(state = initialState, action = {}) {
+  const behavior = behaviors[action.type];
+  return behavior ? behavior(state, action) : state;
+};

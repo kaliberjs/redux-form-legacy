@@ -1,38 +1,37 @@
-import React from 'react';
-import {connect} from 'react-redux';
-import createAll from './createAll';
+import createHigherOrderComponent from './createHigherOrderComponent';
+import mapValues from './mapValues';
+import * as importedActions from './actions';
+import reducer from './reducer'
 
-const isNative =
-  typeof window !== 'undefined' &&
-  window.navigator &&
-  window.navigator.product &&
-  window.navigator.product === 'ReactNative';
+/**
+ * The decorator that is the main API to redux-form
+ */
+export function reduxForm(config) {
 
-export const {
-  actionTypes,
-  addArrayValue,
-  autofill,
-  autofillWithKey,
-  blur,
-  change,
-  changeWithKey,
-  destroy,
-  focus,
-  reducer,
-  reduxForm,
-  removeArrayValue,
-  getValues,
-  initialize,
-  initializeWithKey,
-  propTypes,
-  reset,
-  startAsyncValidation,
-  startSubmit,
-  stopAsyncValidation,
-  stopSubmit,
-  swapArrayValues,
-  touch,
-  touchWithKey,
-  untouch,
-  untouchWithKey
-} = createAll(isNative, React, connect);
+  return WrappedComponent => {
+
+    const ReduxForm = createHigherOrderComponent(WrappedComponent);
+
+    return function ConnectedForm(props) {
+      const propsWithConfig = { ...config, ...props }
+      const { form: formName, formKey } = propsWithConfig
+
+      const [stateToProps, extra] = formKey !== undefined && formKey !== null
+        ? [
+          state => ({ form: state && state[formName] && state[formName][formKey] }),
+          { form: formName, key: formKey }
+        ]
+        : [
+          state => ({ form: state && state[formName] }),
+          { form: formName }
+        ]
+
+      const [state, dispatch] = React.useReducer(reducer, {})
+      const propsThatDispatch = mapValues(importedActions, x => (...args) => dispatch({ ...x(...args), ...extra }))
+
+      // remove some redux-form config-only props
+      const { form, ...passableProps } = propsWithConfig;
+      return <ReduxForm {...passableProps} {...stateToProps(state)} {...propsThatDispatch} />;
+    }
+  }
+}

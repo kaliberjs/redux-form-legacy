@@ -1,8 +1,8 @@
 import getValue from './getValue';
 const createOnBlur =
-  (name, blur, isReactNative, afterBlur) =>
+  (name, blur, afterBlur) =>
     event => {
-      const value = getValue(event, isReactNative);
+      const value = getValue(event);
       blur(name, value);
       if (afterBlur) {
         afterBlur(name, value);

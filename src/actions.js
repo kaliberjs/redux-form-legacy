@@ -9,7 +9,7 @@ export const autofill = (field, value) =>
   ({type: AUTOFILL, field, value});
 
 export const blur = (field, value) =>
-  ({type: BLUR, field, value});
+  ({type: BLUR, field, value, touch: true});
 
 export const change = (field, value) =>
   ({type: CHANGE, field, value});

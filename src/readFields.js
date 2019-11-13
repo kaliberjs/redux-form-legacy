@@ -6,7 +6,7 @@ import removeField from './removeField';
 /**
  * Reads props and generates (or updates) field structure
  */
-const readFields = (props, previousProps, myFields, asyncValidate, isReactNative) => {
+const readFields = (props, previousProps, myFields, asyncValidate) => {
   const {fields, form, validate} = props;
   const previousFields = previousProps.fields;
   const values = getValues(fields, form);
@@ -28,7 +28,7 @@ const readFields = (props, previousProps, myFields, asyncValidate, isReactNative
     ~fields.indexOf(previousField) ? accumulator : removeField(accumulator, previousField),
     {...myFields}) : {...myFields};
   fields.forEach(name => {
-    readField(form, name, undefined, fieldObjects, syncErrors, asyncValidate, isReactNative, props, tally);
+    readField(form, name, undefined, fieldObjects, syncErrors, asyncValidate, props, tally);
   });
   Object.defineProperty(fieldObjects, '_meta', {
     value: {
