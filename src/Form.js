@@ -19,6 +19,13 @@ export default class Form extends Component {
     validate: () => ({})
   }
 
+  fields = memoize(
+    (props, { prevResult: fields = {}, prevArgs: [prevProps = {}] }) => readFields(props, prevProps, fields, this.asyncValidate),
+    ([props], [prevProps = {}]) => {
+      return !deepEqual(prevProps.fields, props.fields) || !deepEqual(prevProps.form, props.form, {strict: true})
+    }
+  )
+
   constructor(props) {
     super(props);
     const { initialValues, fields } = this.props;
@@ -27,7 +34,7 @@ export default class Form extends Component {
       createInitialState(initialValues, fields, {}, true, false) :
       props.form;
 
-    this.fields = readFields({ ...props, form }, {}, {}, this.asyncValidate);
+    this.fields({ ...props, form })
   }
 
   componentDidMount() {
@@ -37,13 +44,10 @@ export default class Form extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (!deepEqual(this.props.fields, nextProps.fields) || !deepEqual(this.props.form, nextProps.form, {strict: true})) {
-      this.fields = readFields(nextProps, this.props, this.fields, this.asyncValidate);
-    }
-    if (!deepEqual(this.props.initialValues, nextProps.initialValues)) {
-      this.props.initialize(nextProps.initialValues,
-        nextProps.fields,
+  componentDidUpdate(prevProps) {
+    if (!deepEqual(prevProps.initialValues, this.props.initialValues)) {
+      this.props.initialize(this.props.initialValues,
+        this.props.fields,
         /* overwriteOnInitialValuesChange */ true);
     }
   }
@@ -61,7 +65,7 @@ export default class Form extends Component {
         values[name] = value;
       }
       const syncErrors = validate(values, this.props);
-      const {allPristine} = this.fields._meta;
+      const {allPristine} = this.fields(this.props)._meta;
       const initialized = form._initialized;
 
       // if blur validating, only run async validate if sync validation passes
@@ -92,7 +96,7 @@ export default class Form extends Component {
   }
 
   render() {
-    const allFields = this.fields;
+    const allFields = this.fields(this.props);
     const {addArrayValue, asyncBlurFields, autofill, blur, change, destroy, focus, fields, form, initialValues, initialize,
       onSubmit, propNamespace, reset, removeArrayValue, returnRejectedSubmitPromise, startAsyncValidation,
       startSubmit, stopAsyncValidation, stopSubmit, submitFailed, swapArrayValues, touch, untouch, validate,
@@ -131,5 +135,19 @@ export default class Form extends Component {
     };
     const passedProps = propNamespace ? {[propNamespace]: props} : props;
     return <WrappedComponent {...{ ...passableProps, ...passedProps }}/>;
+  }
+}
+
+
+function memoize(f, hasChanged) {
+  let prevArgs = []
+  let prevResult = undefined
+  return (...args) => {
+    const changed = hasChanged(args, prevArgs)
+    if (changed) {
+      prevResult = f(...args, { prevResult, prevArgs })
+      prevArgs = args
+    }
+    return prevResult
   }
 }
