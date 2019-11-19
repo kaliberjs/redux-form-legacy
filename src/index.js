@@ -1,6 +1,6 @@
-import createHigherOrderComponent from './createHigherOrderComponent';
-import mapValues from './mapValues';
-import * as importedActions from './actions';
+import Form from './Form'
+import mapValues from './mapValues'
+import * as importedActions from './actions'
 import reducer from './reducer'
 
 /**
@@ -9,9 +9,6 @@ import reducer from './reducer'
 export function reduxForm(config) {
 
   return WrappedComponent => {
-
-    const ReduxForm = createHigherOrderComponent(WrappedComponent);
-
     return function ConnectedForm(props) {
       const propsWithConfig = { ...config, ...props }
       const { form: formName, formKey } = propsWithConfig
@@ -31,7 +28,7 @@ export function reduxForm(config) {
 
       // remove some redux-form config-only props
       const { form, ...passableProps } = propsWithConfig;
-      return <ReduxForm {...passableProps} {...stateToProps(state)} {...propsThatDispatch} />;
+      return <Form {...{ WrappedComponent } } {...passableProps} {...stateToProps(state)} {...propsThatDispatch} />;
     }
   }
 }
