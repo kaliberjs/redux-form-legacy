@@ -37,7 +37,7 @@ export default class Form extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (!deepEqual(this.props.fields, nextProps.fields) || !deepEqual(this.props.form, nextProps.form, {strict: true})) {
       this.fields = readFields(nextProps, this.props, this.fields, this.asyncValidate);
     }
