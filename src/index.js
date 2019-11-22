@@ -28,7 +28,15 @@ export function reduxForm(config) {
         ]
 
       const [state, dispatch] = React.useReducer(reducer, {})
-      const propsThatDispatch = mapValues(importedActions, x => (...args) => dispatch({ ...x(...args), ...extra }))
+      const isMountedRef = React.useRef(false)
+      React.useEffect(
+        () => { isMountedRef.current = true; return () => { isMountedRef.current = false } },
+        []
+      )
+
+      const propsThatDispatch = mapValues(importedActions, x => (...args) => {
+        if (isMountedRef.current) dispatch({ ...x(...args), ...extra })
+      })
 
       // remove some redux-form config-only props
       const { form, ...passableProps } = propsWithConfig;
