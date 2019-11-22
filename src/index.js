@@ -9,7 +9,11 @@ import reducer from './reducer'
 export function reduxForm(config) {
 
   return WrappedComponent => {
-    return function ConnectedForm(props) {
+
+    ConnectedForm.displayName = `ConnectedForm(${WrappedComponent.displayName || WrappedComponent.name})`
+    return ConnectedForm
+
+    function ConnectedForm(props) {
       const propsWithConfig = { ...config, ...props }
       const { form: formName, formKey } = propsWithConfig
 
